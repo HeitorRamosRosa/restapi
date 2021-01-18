@@ -551,12 +551,12 @@ public class Server extends Thread{
                     connetionsArray.get(clientNumber).getoOS().flush();
                     System.out.println("request: " + c.getRequest() + " was written with value: " + c.getValue());
 
-                    if(c.getRequest().equals("dm")){
+                   /* if(c.getRequest().equals("dm")){
                         System.out.println("to: " + sender + " from: " +receiver);
                         System.out.println("message:" + message);
                         System.out.println("to2: " + c.getrClientName() + " from2: " + c.getsClientName());
                         System.out.println("message2:" + c.getMessage());
-                    }
+                    }*/
 
                 }
 
@@ -1067,9 +1067,48 @@ public class Server extends Thread{
                 serverData.getClientDataArray().get(i).setServerPort(serverPort);
                 serverData.getClientDataArray().get(i).setLoggedIn(true);
                 serverData.getClientDataArray().get(i).setClientN(x.getClientN());
+                serverData.getClientDataArray().get(i).setToken("loggedViaClient");
             }
         }
 
+    }
+
+    public void logUser(String name, String password,String token){
+
+        for(int i = 0 ; i < serverData.getClientDataArray().size() ; i++){
+            if(serverData.getClientDataArray().get(i).getName().equals(name)){
+
+                serverData.getClientDataArray().get(i).setServerPort(serverPort);
+                serverData.getClientDataArray().get(i).setClientN(getNUsersOnline());
+                serverData.getClientDataArray().get(i).setLoggedIn(true);
+                serverData.getClientDataArray().get(i).setToken(token);
+                System.out.println("User: " + name + " was logged on server with port: " + serverPort);
+
+                MulticastSender ms = new MulticastSender("dataUpdated");
+                ms.start();
+
+                if(RCI!=null) {
+                    try {
+                        RCI.showResult("User ["+ name +"] was authenticated.");
+                    } catch (IOException e) {
+                        e.printStackTrace();
+                    }
+                }
+            }
+        }
+
+    }
+
+    public int getNUsersOnline(){
+        int count = 0;
+
+        for(int i = 0 ; i < serverData.getClientDataArray().size() ; i++){
+
+            if(serverData.getClientDataArray().get(i).isLoggedIn() == true){
+                count++;
+            }
+        }
+        return count;
     }
 
     public boolean checkIfChannelExists(String name){
@@ -1208,6 +1247,25 @@ public class Server extends Thread{
             temp = " name: "+ serverData.getClientDataArray().get(i).getName();
         }
         return temp;
+    }
+
+    public void messageToServerUsers(String fromUser,String message) throws IOException {
+        for(int i = 0 ; i < serverData.getClientDataArray().size() ; i++){
+            if(serverData.getClientDataArray().get(i).getServerPort() == serverPort){
+                SendRequest sR = new SendRequest("dm",fromUser,serverData.getClientDataArray().get(i).getName(),message,serverData.getClientDataArray().get(i).getClientN());
+                //o campo password foi passado porque o message refere-se a request que não é o que se quer passar
+                sR.start();
+                if(RCI!=null)
+                    RCI.showResult("["+serverPort+"]: Message Received. Sender: ["+fromUser+"] Receiver: ["+serverData.getClientDataArray().get(i).getName()+"] Message:["+message+"]");
+            }
+        }
+    }
+
+    public String generateLogInToken(String name,String pw){
+        String token = "";
+        int nameHash = name.hashCode(),pwHash = pw.hashCode();
+        token = Integer.toString(nameHash) + Integer.toString(pwHash) ;
+        return "str";
     }
 
     public static void main(String[] args) throws SQLException, RemoteException {

@@ -17,6 +17,7 @@ public class ClientData implements Serializable {
     private String channelName = "none";
     private boolean inChannel = false;
     private String channelToCreateName;
+    private String token = "invalid";
     public ClientData() {
     }
 
@@ -153,5 +154,13 @@ public class ClientData implements Serializable {
 
     public void setChannelToCreateName(String channelToCreateName) {
         this.channelToCreateName = channelToCreateName;
+    }
+
+    public String getToken() {
+        return token;
+    }
+
+    public void setToken(String token) {
+        this.token = token;
     }
 }
