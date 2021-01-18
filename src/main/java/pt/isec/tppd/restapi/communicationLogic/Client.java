@@ -533,7 +533,7 @@ public class Client extends Thread{
         SendRequest sR =  new SendRequest("speak");
         sR.start();
         do{
-            System.out.println("[client]: waiting for server's response (...)");
+            //System.out.println("[client]: waiting for server's response (...)");
             try {
                 Thread.sleep(200);
             } catch (InterruptedException e) {

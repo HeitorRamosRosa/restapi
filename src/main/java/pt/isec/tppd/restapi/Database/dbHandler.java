@@ -10,7 +10,7 @@ public class dbHandler {
 
     private static final String DATABASE_URL = "jdbc:mysql://localhost:3306/?useLegacyDatetimeCode=false&serverTimezone=UTC";
     private static final String USERNAME = "root";
-    private static final String PASSWORD = "nop133166";
+    private static final String PASSWORD = "admin";
 
 
     public static void createDatabase(String database){

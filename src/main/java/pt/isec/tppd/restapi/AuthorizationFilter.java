@@ -19,9 +19,14 @@ public class AuthorizationFilter extends OncePerRequestFilter
 
     AuthorizationFilter(){
         try {
-            server = new Server(9009);
+            Thread.sleep(5000);
+        } catch (InterruptedException e) {
+            e.printStackTrace();
+        }
+        try {
+            server = new Server(9008);
         } catch (SQLException throwables) {
-            System.out.println("Error creating server");
+            System.out.println("Error creating server.");
         }
         server.start();
     }

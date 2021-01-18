@@ -56,7 +56,7 @@ public class Server extends Thread{
     class HandleFirstConnection extends Thread{
         @Override
         public void run(){
-            System.out.println("UDP connection manager is up and running.");
+            System.out.println("["+serverPort+"] UDP connection manager is up and running.");
             try {
 
                 DatagramPacket dP;
@@ -73,12 +73,12 @@ public class Server extends Thread{
                     if(c.getRequest().equals("firstConnect")){
                         InetAddress clientIp = dP.getAddress();
                         int clientPort = dP.getPort();
-                        System.out.println("Client trying to connect from: [" +clientIp + "] : ["+clientPort + "].");
+                        System.out.println("["+serverPort+"]Client trying to connect from: [" +clientIp + "] : ["+clientPort + "].");
 
                         ByteArrayOutputStream bAOS = new ByteArrayOutputStream();
                         ObjectOutputStream oOS = new ObjectOutputStream(bAOS);
 
-                        System.out.println("Checking if transfer...");
+                        System.out.println("["+serverPort+"] Checking if transfer...");
                         //server cheio e unico
                         if(nTCPConnection == 5 && otherServers.isEmpty()){
                             c.setAccepted(false);
@@ -124,11 +124,11 @@ public class Server extends Thread{
                             for(int i=0; i<otherServers.size();i++){
                                 if(otherServers.get(i).getnClients() <= nTCPConnection / 2 && nTCPConnection>0){
                                     indexServerLight = i;
-                                    System.out.println("Found server considerably lighter: index["+i+"] with load ["+otherServers.get(i).getnClients()+"] vs currentLoad: ["+nTCPConnection+"]");
+                                    System.out.println("["+serverPort+"] Found server considerably lighter: index["+i+"] with load ["+otherServers.get(i).getnClients()+"] vs currentLoad: ["+nTCPConnection+"]");
                                     break;
                                 }
                             }
-                            System.out.println("Sending client to server index:["+indexServerLight+"]");
+                            System.out.println("["+serverPort+"] Sending client to server index:["+indexServerLight+"]");
                             //se nao existe consideravelmente mais leve
                             if(indexServerLight == -1){
                                 ClientData temp = new ClientData();
@@ -174,7 +174,7 @@ public class Server extends Thread{
                 sS = new ServerSocket(serverPort);
 
                 do{
-                    System.out.println("Trying to establish TCP connection " + nTCPConnection + ".");
+                    System.out.println("["+serverPort+"]Trying to establish TCP connection " + nTCPConnection + ".");
                     Socket s = sS.accept();
                     ObjectInputStream oIS = new ObjectInputStream(s.getInputStream());
                     ObjectOutputStream oOS = new ObjectOutputStream(s.getOutputStream());
@@ -193,16 +193,16 @@ public class Server extends Thread{
                         temp.setClientN(serverData.getnClients());
                         c.setClientData(temp);
                         serverData.setnClients(serverData.getnClients() + 1);
-                        System.out.println("TCP connection with client was successful. ["+nTCPConnection+"] connections established.");
+                        System.out.println("["+serverPort+"] TCP connection with client was successful. ["+nTCPConnection+"] connections established.");
                         c.setAccepted(true);
                         clientTCPConnection cTC = new clientTCPConnection();
                         cTC.start();
-                        System.out.println("Informing other servers of new connection");
+                        System.out.println("["+serverPort+"]Informing other servers of new connection");
                         MulticastSender ms = new MulticastSender("dataUpdated");
                         ms.start();
                     }else{
                         //nunca ocorre, transferencias acontecem nas tentativas de UDP
-                        System.out.println("TCP connection with client was redirected to another server.");
+                        System.out.println("["+serverPort+"] TCP connection with client was redirected to another server.");
                         c.setAccepted(false);
 
                     }
@@ -213,7 +213,7 @@ public class Server extends Thread{
                 }while(shutdown == false);
 
             } catch (IOException | ClassNotFoundException e) {
-                System.out.println("A server was already runnning at this port.");
+                System.out.println("["+serverPort+"] A server was already runnning at this port.");
                 e.printStackTrace();
             }
         }
@@ -225,7 +225,7 @@ public class Server extends Thread{
 
             int n = nTCPConnection - 1;
             Socket s = connetionsArray.get(n).getSocket();
-            System.out.println("TCP connection with client [" + n +"] is being held by an independent thread.");
+            System.out.println("["+serverPort+"] TCP connection with client [" + n +"] is being held by an independent thread.");
 
             try {
 
@@ -233,21 +233,21 @@ public class Server extends Thread{
                     TCPCommunication c = (TCPCommunication)connetionsArray.get(n).getoIS().readObject();
                     switch (c.getRequest()){
                         case "requestOne":
-                            System.out.println("Request one was received.");
+                            System.out.println("["+serverPort+"] Request one was received.");
                             SendRequest sR1 = new SendRequest("ResponseToRequest1",c.getClientData().getClientN());
                             sR1.start();
                             break;
 
                         case "requestTwo":
-                            System.out.println("Request two was received.");
+                            System.out.println("["+serverPort+"] Request two was received.");
                             SendRequest sR2 = new SendRequest("ResponseToRequest2",c.getClientData().getClientN());
                             sR2.start();
                             break;
 
                         case "register":
                             boolean exists1 = checkIfClientExists(c.getClientData().getName());
-                            System.out.println("register was received name: "+c.getClientData().getName()+ " pw: "+c.getClientData().getPassword());
-                            System.out.println("exists: " + exists1);
+                            System.out.println("["+serverPort+"] register was received name: "+c.getClientData().getName()+ " pw: "+c.getClientData().getPassword());
+                            System.out.println("["+serverPort+"] exists: " + exists1);
                             if(exists1 == false){//register user
                                 registerClient(c.getClientData());
                                 SendRequest sR3 = new SendRequest("registerResponse",c.getClientData().getClientN(),0);
@@ -264,8 +264,8 @@ public class Server extends Thread{
 
                         case "login":
                             boolean exists2 = checkIfClientExists(c.getClientData().getName());
-                            System.out.println("register was received name: "+c.getClientData().getName()+ " pw: "+c.getClientData().getPassword());
-                            System.out.println("exists: " + exists2);
+                            System.out.println("["+serverPort+"] register was received name: "+c.getClientData().getName()+ " pw: "+c.getClientData().getPassword());
+                            System.out.println("["+serverPort+"] exists: " + exists2);
                             if(exists2 == false){
                                 SendRequest sR4 = new SendRequest("loginResponse",c.getClientData().getClientN(),1);
                                 sR4.start();
@@ -297,21 +297,21 @@ public class Server extends Thread{
                             break;
 
                         case "userList":
-                            System.out.println("User list request was received.");
-                            System.out.println("sent list:" + getUserList());
+                            System.out.println("["+serverPort+"] User list request was received.");
+                            System.out.println("["+serverPort+"] sent list:" + getUserList());
                             SendRequest sR5 = new SendRequest("userListResponse",c.getClientData().getClientN(),getUserList());
                             sR5.start();
                             break;
 
                         case "channelList":
-                            System.out.println("channel list request was received.");
-                            System.out.println("sent list:" + getChannelList());
+                            System.out.println("["+serverPort+"] channel list request was received.");
+                            System.out.println("["+serverPort+"] sent list:" + getChannelList());
                             sR5 = new SendRequest("channelListResponse",c.getClientData().getClientN(),getChannelList());
                             sR5.start();
                             break;
 
                         case "dm":
-                            System.out.println("Dm request was received.");
+                            System.out.println("["+serverPort+"] Dm request was received.");
                             boolean sent = false;
                             int value = 2; //default
                             if(checkIfClientExists(c.getClientData().getRecipient())){ //pus estes dois ifs para poder dar dois valores de resposta diferentes
@@ -324,7 +324,7 @@ public class Server extends Thread{
                                             SendRequest sR = new SendRequest("dm",c.getsClientName(),c.getrClientName(),c.getMessage(),serverData.getClientDataArray().get(i).getClientN());
                                             //o campo password foi passado porque o message refere-se a request que não é o que se quer passar
                                             sR.start();
-                                            System.out.println("Checking if RMI was null. case DM");
+                                            System.out.println("["+serverPort+"] Checking if RMI was null. case DM");
                                             if(RCI!=null)
                                                 RCI.showResult("["+serverPort+"] Message from ["+c.getsClientName()+"] to ["+c.getrClientName()+"]. Message:[+"+c.getMessage()+"].");
                                             sent = true;
@@ -333,7 +333,7 @@ public class Server extends Thread{
                                     }
                                     if(sent == false){
                                         //System.out.println("receiveeeeer SR SENDER: "+ c.getClientData().getRecipient());
-                                        System.out.println("Checking if RMI was null. case DM Multicast");
+                                        System.out.println("["+serverPort+"] Checking if RMI was null. case DM Multicast");
                                         if(RCI!=null)
                                             RCI.showResult("["+serverPort+"] Message from ["+c.getClientData().getName()+"] to ["+c.getClientData().getRecipient()+"]. Message:["+c.getClientData().getMessage()+"].");
                                         MulticastSender ms = new MulticastSender("dm",c.getClientData().getName(),c.getClientData().getRecipient(),c.getClientData().getMessage());
@@ -348,7 +348,7 @@ public class Server extends Thread{
 
                         case "createChannel":
                             value = 2; // too many channels
-                            System.out.println("Create channel request was received.");
+                            System.out.println("["+serverPort+"] Create channel request was received.");
                             if(serverData.getChannels().size() == 3){
 
                             }else if(checkIfChannelExists(c.getChannelToCreateName())){
@@ -365,7 +365,7 @@ public class Server extends Thread{
 
                         case "enterChannel":
                             value = 2; // channel does not exist
-                            System.out.println("Enter channel request was received.");
+                            System.out.println("["+serverPort+"] Enter channel request was received.");
                             if(checkIfChannelExists(c.getClientData().getChannelName())){
                                 value = 1; // user is already in a channel
                                 if(!checkIfUserIsInChatRoom(c.getClientData().getName())){
@@ -381,7 +381,7 @@ public class Server extends Thread{
 
                         case "deleteChannel":
                             value = 2; // channel does not exist
-                            System.out.println("Delete channel request was received.");
+                            System.out.println("["+serverPort+"] Delete channel request was received.");
                             if(checkIfChannelExists(c.getChannelToCreateName())){
                                 value = 1;// user does not own channel
                                 if(checkIfUserOwnsChannel(c.getClientData().getName(),c.getChannelToCreateName())){
@@ -396,11 +396,11 @@ public class Server extends Thread{
                             break;
 
                         case "speak":
-                            System.out.println("Speak in channel request was received.");
+                            System.out.println("["+serverPort+"] Speak in channel request was received.");
                             value = 1; //user cannot speak out of a channel
                             if(checkIfUserIsInChatRoom(c.getClientData().getName())){
                                 value = 0;
-                                System.out.println("Checking if RMI was null. case speak");
+                                System.out.println("["+serverPort+"] Checking if RMI was null. case speak");
                                 if(RCI!=null)
                                     RCI.showResult("["+serverPort+"] Message from ["+c.getClientData().getName()+"] to channel["+c.getClientData().getChannelName()+"]. Message:[+"+c.getClientData().getMessage()+"].");
                                 for(int i = 0; i < serverData.getClientDataArray().size() ; i ++){
@@ -430,7 +430,7 @@ public class Server extends Thread{
 
                         case "leaveChannel":
                             value = 2; // channel does not exist
-                            System.out.println("Enter channel request was received.");
+                            System.out.println("["+serverPort+"] Enter channel request was received.");
                             if(checkIfChannelExists(c.getClientData().getChannelName())){
                                 value = 1; // user is not in a channel
                                 if(checkIfUserIsInChatRoom(c.getClientData().getName())){
@@ -446,7 +446,7 @@ public class Server extends Thread{
 
                         case "changeChannel":
                             value = 2; // channel does not exist
-                            System.out.println("Change channel request was received.");
+                            System.out.println("["+serverPort+"] Change channel request was received.");
                             if(checkIfChannelExists(c.getChannelToCreateName())){
                                 value = 1;// user does not own channel
                                 if(checkIfUserOwnsChannel(c.getClientData().getName(),c.getChannelToCreateName())){
@@ -465,7 +465,7 @@ public class Server extends Thread{
 
             } catch (IOException | ClassNotFoundException e) {
 
-                System.out.println("IO Exception within TCP connection " + n + ".");
+                System.out.println("["+serverPort+"] IO Exception within TCP connection " + n + ".");
                 e.printStackTrace();
 
             }
@@ -531,19 +531,21 @@ public class Server extends Thread{
                         c.setMessage(message);
                         server.getoOS().writeUnshared(c);
                         server.getoOS().flush();
-                        System.out.println("RMI_DM:");
-                        System.out.println("to: " + receiver + " from: " + sender);
-                        System.out.println("message:" + message);
+                        System.out.println("["+serverPort+"] RMI_DM:");
+                        System.out.println("["+serverPort+"] to: " + receiver + " from: " + sender);
+                        System.out.println("["+serverPort+"] message:" + message);
                         return;
                     }
                 }
-
+                if(serverData.getClientDataArray().get(clientNumber).isLoggedFromBrowser() == true){
+                    return;
+                }
                 if(clientNumber == -1){
                     for(int i = 0 ; i < connetionsArray.size() ; i++){
                         TCPCommunication c = new TCPCommunication(request,false, new ClientData(),new ServerData(serverData));
                         connetionsArray.get(i).getoOS().writeObject(c); /*writeUnshared por causa da cache e a referência ser a mesma ou fazer oOS.reset()*/
                         connetionsArray.get(i).getoOS().flush();
-                        System.out.println("request: " + c.getRequest() + " was written with value: " + c.getValue());
+                        System.out.println("["+serverPort+"] request: " + c.getRequest() + " was written with value: " + c.getValue());
                     }
                 }else{
                     TCPCommunication c = new TCPCommunication(request,false, new ClientData("ds",str),new ServerData(serverData));
@@ -555,7 +557,7 @@ public class Server extends Thread{
                     }
                     connetionsArray.get(clientNumber).getoOS().writeObject(c); /*writeUnshared por causa da cache e a referência ser a mesma ou fazer oOS.reset()*/
                     connetionsArray.get(clientNumber).getoOS().flush();
-                    System.out.println("request: " + c.getRequest() + " was written with value: " + c.getValue());
+                    System.out.println("["+serverPort+"] request: " + c.getRequest() + " was written with value: " + c.getValue());
 
                    /* if(c.getRequest().equals("dm")){
                         System.out.println("to: " + sender + " from: " +receiver);
@@ -567,7 +569,7 @@ public class Server extends Thread{
                 }
 
             } catch (IOException e) {
-                System.out.println("IOException while sending request in SendRequest thread.");
+                System.out.println("["+serverPort+"] IOException while sending request in SendRequest thread.");
                 e.printStackTrace();
             }
 
@@ -578,14 +580,14 @@ public class Server extends Thread{
     class MulticastReceiver extends Thread{
         @Override
         public void run() {
-            System.out.println("Server is listening to multicast requests.");
+            System.out.println("["+serverPort+"]Server is listening to multicast requests.");
 
             try {
 
                 InetAddress group = InetAddress.getByName("225.4.5.6");
                 MulticastSocket mS = new MulticastSocket(9007);
                 mS.joinGroup(group);
-                byte [] buf = new byte[2048];
+                byte [] buf = new byte[3072];
                 DatagramPacket dP = new DatagramPacket(buf,buf.length);
 
                 do{
@@ -595,7 +597,7 @@ public class Server extends Thread{
                     ObjectInputStream oIS = new ObjectInputStream(bAIS);
                     MulticastCommunication mC = (MulticastCommunication)oIS.readObject();
                     if(mC.getSendingServer() != serverNumber) {
-                        System.out.println("Multicast request from server [" + mC.getServerdata().getServerPort() + "]: [" + mC.getMessage() + "]");
+                        System.out.println("["+serverPort+"]Multicast request from server [" + mC.getServerdata().getServerPort() + "]: [" + mC.getMessage() + "]");
 
                         switch (mC.getMessage()) {
                             case "serverConnect":
@@ -608,7 +610,7 @@ public class Server extends Thread{
 
                                 if (alreadyConnected == false) {
                                     otherServers.add(mC.getServerdata());
-                                    System.out.println("The server connected to the system.");
+                                    System.out.println("["+serverPort+"] The server connected to the system.");
                                     MulticastSender ms = new MulticastSender("dataUpdated");
                                     ms.start();
 
@@ -628,7 +630,7 @@ public class Server extends Thread{
                                 for (int i = 0; i < otherServers.size(); i++) {
                                     if (otherServers.get(i).getServerNumber() == mC.getServerdata().getServerNumber()) {
                                         otherServers.remove(i);
-                                        System.out.println("The server disconnected from the system.");
+                                        System.out.println("[\"+serverPort+\"] The server disconnected from the system.");
                                     }
                                 }
                                 MulticastSender mSS = new MulticastSender("oke");
@@ -642,7 +644,7 @@ public class Server extends Thread{
                                     if (otherServers.get(i).getServerNumber() == mC.getServerdata().getServerNumber()) {
                                         otherServers.remove(i);
                                         otherServers.add(mC.getServerdata());
-                                        System.out.println("The server received a data update.");
+                                        System.out.println("["+serverPort+"]The server received a data update.");
                                     }
                                 }
                                 break;
@@ -694,7 +696,7 @@ public class Server extends Thread{
 
             } catch (IOException | ClassNotFoundException e) {
 
-                System.out.println("IO or ClassNotFound Exception within multicast receiver thread.");
+                System.out.println("["+serverPort+"] IO or ClassNotFound Exception within multicast receiver thread.");
                 e.printStackTrace();
 
             }
@@ -772,12 +774,12 @@ public class Server extends Thread{
                 byte [] bufOut = bAOS.toByteArray();
                 DatagramPacket dP = new DatagramPacket(bufOut,bufOut.length,group,9007);
                 mS.send(dP);
-                System.out.println("[Multicast request sent] : ["+message+"]");
+                System.out.println("["+serverPort+"] [Multicast request sent] : ["+message+"]");
                 mS.close();
 
 
             } catch (IOException e) {
-                System.out.println("IO Exception within multicast sender thread.");
+                System.out.println("["+serverPort+"] IO Exception within multicast sender thread.");
                 e.printStackTrace();
 
             }
@@ -791,9 +793,9 @@ public class Server extends Thread{
             try
             {
                 Registry registry = LocateRegistry.createRegistry(Registry.REGISTRY_PORT+serverPort);
-                System.out.println("Registry in port ["+(Registry.REGISTRY_PORT+serverPort)+"]");
+                System.out.println("["+serverPort+"] Registry in port ["+(Registry.REGISTRY_PORT+serverPort)+"]");
                 String bindName = "Server"+serverPort;
-                System.out.println("Bindname: ["+bindName+"]");
+                System.out.println("["+serverPort+"] Bindname: ["+bindName+"]");
                 registry.rebind(bindName,SRO);
             } catch (RemoteException e)
             {
@@ -831,9 +833,9 @@ public class Server extends Thread{
             {
                 SendRequest sr;
                 if(cliente.isLoggedIn() && cliente.getServerPort() == serverData.getServerPort()){
-                    System.out.println("RMI_CLIENT sending to: ["+cliente.getName()+"] with message: ["+ClientData.getMessage()+"]");
+                    System.out.println("["+serverPort+"] RMI_CLIENT sending to: ["+cliente.getName()+"] with message: ["+ClientData.getMessage()+"]");
                     sr = new SendRequest("dm","RMIClient", cliente.getName(),ClientData.getMessage(),RMI_CNUMBER);
-                    System.out.println("Sending Request");
+                    System.out.println("["+serverPort+"] Sending Request");
                     sr.start();
                 }
             }
@@ -844,23 +846,24 @@ public class Server extends Thread{
         public void registaObserver(RemoteClientInterface RCI) throws IOException
         {
             Server.RCI = RCI;
-            System.out.println("[Server is being observed by Remote Client.]");
+            System.out.println("["+serverPort+"] [Server is being observed by Remote Client.]");
         }
 
         @Override
         public void unregisterObserver() throws IOException {
             Server.RCI = null;
-            System.out.println("[Server is not being observed by Remote Client anymore.]");
+            System.out.println("["+serverPort+"] [Server is not being observed by Remote Client anymore.]");
         }
 
     }
 
+    @Override
     public void run(){
         HandleFirstConnection hFC = new HandleFirstConnection();
         EstablishTCPConnection eTC = new EstablishTCPConnection();
         MulticastReceiver mR = new MulticastReceiver();
         chooseAvailablePort();
-        System.out.println("Server [" + serverNumber +"] is running.");
+        System.out.println("["+serverPort+"] Server [" + serverNumber +"] is running.");
 
         //ConnectToRemoteRegistry ;
         ServerRemoteObject SRO = null;
@@ -868,7 +871,7 @@ public class Server extends Thread{
             SRO = new ServerRemoteObject();
         } catch (RemoteException e) {
             e.printStackTrace();
-            System.out.println("Error in server run() server remote object.");
+            System.out.println("["+serverPort+"] Error in server run() server remote object.");
         }
         RMI_Handler.Register(this.serverPort,SRO);
 
@@ -892,8 +895,7 @@ public class Server extends Thread{
         Scanner sc = new Scanner(System.in);
         String op = "buHU";
         do{
-            System.out.println(("["+this.serverPort+"]"));
-            System.out.print("insert command:");
+            System.out.println(("["+this.serverPort+"]") +"insert command:");
             op = sc.nextLine();
             switch (op){
                 case "exit":
@@ -1037,9 +1039,14 @@ public class Server extends Thread{
 
     public String getUserList(){
         String temp ="";
+        if(serverData.getClientDataArray().size() == 0){
+            temp ="There are no online users.";
+        }
         for(int i = 0 ; i < serverData.getClientDataArray().size() ; i++){
-            temp += serverData.getClientDataArray().get(i).getName();
-            temp += "\n";
+            if(serverData.getClientDataArray().get(i).isLoggedIn()){
+                temp += serverData.getClientDataArray().get(i).getClientN() + serverData.getClientDataArray().get(i).getName();
+                temp += "\n";
+            }
         }
 
         return temp;
@@ -1077,6 +1084,7 @@ public class Server extends Thread{
                 serverData.getClientDataArray().get(i).setLoggedIn(true);
                 serverData.getClientDataArray().get(i).setClientN(x.getClientN());
                 serverData.getClientDataArray().get(i).setToken("loggedViaClient");
+                serverData.getClientDataArray().get(i).setLoggedFromBrowser(false);
             }
         }
 
@@ -1088,10 +1096,12 @@ public class Server extends Thread{
             if(serverData.getClientDataArray().get(i).getName().equals(name)){
 
                 serverData.getClientDataArray().get(i).setServerPort(serverPort);
-                serverData.getClientDataArray().get(i).setClientN(getNUsersOnline());
+                int temp = this.getNUsersOnline();
+                serverData.getClientDataArray().get(i).setClientN(temp);
                 serverData.getClientDataArray().get(i).setLoggedIn(true);
                 serverData.getClientDataArray().get(i).setToken(token);
-                System.out.println("User: " + name + " was logged on server with port: " + serverPort);
+                serverData.getClientDataArray().get(i).setLoggedFromBrowser(true);
+                System.out.println("["+serverPort+"]User: " + name + " was logged on server with port: " + token);
 
                 MulticastSender ms = new MulticastSender("dataUpdated");
                 ms.start();
@@ -1122,7 +1132,7 @@ public class Server extends Thread{
 
     public boolean checkIfChannelExists(String name){
         for(int i = 0 ; i < serverData.getChannels().size() ; i++){
-            System.out.println("name1: " + serverData.getChannels().get(i).getName() + " name2: " +name);
+            System.out.println("["+serverPort+"] name1: " + serverData.getChannels().get(i).getName() + " name2: " +name);
             if(serverData.getChannels().get(i).getName().equals(name)){
                 return true;
             }
@@ -1137,7 +1147,7 @@ public class Server extends Thread{
 
     private boolean checkIfUserIsInChatRoom(String n){
         for(int i = 0 ; i < serverData.getClientDataArray().size(); i++){
-            System.out.println("name 1: " + n);
+            System.out.println("["+serverPort+"] name 1: " + n);
             if(serverData.getClientDataArray().get(i).getName().equals(n) && serverData.getClientDataArray().get(i).isInChannel()){
                 return true;
             }
@@ -1257,7 +1267,7 @@ public class Server extends Thread{
 
     public void listCLients(){
         for(int i = 0; i < serverData.getClientDataArray().size() ; i++){
-            System.out.println("ClientN: " + serverData.getClientDataArray().get(i).getClientN() + " name: "+ serverData.getClientDataArray().get(i).getName() + " pw " + serverData.getClientDataArray().get(i).getPassword());
+            System.out.println("["+serverPort+"] ClientN: " + serverData.getClientDataArray().get(i).getClientN() + " name: "+ serverData.getClientDataArray().get(i).getName() + " pw " + serverData.getClientDataArray().get(i).getPassword());
         }
     }
 

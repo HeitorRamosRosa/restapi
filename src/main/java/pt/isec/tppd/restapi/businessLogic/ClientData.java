@@ -18,6 +18,7 @@ public class ClientData implements Serializable {
     private boolean inChannel = false;
     private String channelToCreateName;
     private String token = "invalid";
+    private boolean loggedFromBrowser = false;
     public ClientData() {
     }
 
@@ -162,5 +163,13 @@ public class ClientData implements Serializable {
 
     public void setToken(String token) {
         this.token = token;
+    }
+
+    public boolean isLoggedFromBrowser() {
+        return loggedFromBrowser;
+    }
+
+    public void setLoggedFromBrowser(boolean loggedFromBrowser) {
+        this.loggedFromBrowser = loggedFromBrowser;
     }
 }

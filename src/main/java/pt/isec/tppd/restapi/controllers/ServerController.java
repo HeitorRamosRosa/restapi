@@ -16,7 +16,7 @@ public class ServerController
         try {
             server = new Server(9008);
         } catch (SQLException throwables) {
-            System.out.println("Error creating server");
+            System.out.println("Error creating server.");
         }
         server.start();
     }
