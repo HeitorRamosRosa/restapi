@@ -47,7 +47,6 @@ public class ClientRMI extends UnicastRemoteObject implements RemoteClientInterf
         {
             e.printStackTrace();
         }
-
         run();
     }
 

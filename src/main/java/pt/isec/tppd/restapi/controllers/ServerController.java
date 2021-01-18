@@ -26,6 +26,11 @@ public class ServerController
         return server.getApiTest();
     }
 
+    @GetMapping("/lastMessages")
+    public String getLastMessages(){
+        return server.getLastMessages();
+    }
+
     @PostMapping("/login") //localhost:8080/user/login
     public User login(@RequestBody User user)
     {
@@ -40,8 +45,8 @@ public class ServerController
             user.setToken("invalid");
         }
         return user;
-
     }
+  
     @PostMapping("/messageServer") //localhost:8080/user/login
     public String messageServer (@RequestBody User user) throws IOException {
         server.messageToServerUsers(user.getUsername(),user.getMessage());

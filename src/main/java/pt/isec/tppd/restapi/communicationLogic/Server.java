@@ -11,6 +11,7 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
+import java.util.ArrayList;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -29,8 +30,9 @@ public class Server extends Thread{
     private Connection dbConn;
     static RemoteClientInterface RCI = null;
 
-    static int RMI_CNUMBER = -666;
 
+    static int RMI_CNUMBER = -666;
+    private ArrayList<String> messages = new ArrayList<>();
 
     public Server(int serverPort) throws SQLException {
 
@@ -45,6 +47,8 @@ public class Server extends Thread{
         //dbConn = DriverManager.getConnection(DATABASE_URL,USERNAME,PASSWORD);
 
     }
+
+
 
 
     class HandleFirstConnection extends Thread{
@@ -877,6 +881,9 @@ public class Server extends Thread{
         mR.start();
         connectToOtherServers();
 
+        messages.add("Mensagem1;");
+        messages.add("Mensagem2;");
+        messages.add("Mensagem3;");
 
 
 
@@ -1233,6 +1240,17 @@ public class Server extends Thread{
             }
             return temp;
         }
+    }
+
+    public String getLastMessages()
+    {
+        String retString = new String();
+
+        for(String string : messages){
+            retString += string+("\n");
+        }
+        return retString;
+
     }
 
     public void listCLients(){
