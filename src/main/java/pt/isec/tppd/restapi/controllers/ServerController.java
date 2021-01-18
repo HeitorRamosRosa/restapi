@@ -20,6 +20,7 @@ public class ServerController
         }
         server.start();
     }
+
     @GetMapping("/serverhi")
     public String serverHi()
     {
@@ -38,9 +39,10 @@ public class ServerController
         user.setRightPassword(server.checkIfPasswordMatches(user.getUsername(),user.getPassword()));
         user.setUserWasOnline(server.checkIfUserIsLoggedIn(user.getUsername()));
         if(user.isUserExists() == true && user.isPasswordRight() == true && user.isUserWasOnline() == false){
-            server.logUser(user.getUsername(),user.getPassword(),server.generateLogInToken(user.getUsername(),user.getPassword()));
+            String token = server.generateLogInToken(user.getUsername(),user.getPassword());
+            server.logUser(user.getUsername(),user.getPassword(),token);
             user.setLoggedIn(true);
-            user.setToken(user.getUsername() + "_123");
+            user.setToken(token);
         }else{
             user.setToken("invalid");
         }

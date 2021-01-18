@@ -11,7 +11,9 @@ import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
 import java.rmi.server.UnicastRemoteObject;
 import java.sql.*;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Scanner;
 import java.util.Vector;
 
@@ -1279,11 +1281,25 @@ public class Server extends Thread{
         }
     }
 
+    public String getUserToken(String name){
+
+        for(int i = 0 ; i < serverData.getClientDataArray().size() ; i++){
+            if(serverData.getClientDataArray().get(i).getName().equals(name)){
+                return serverData.getClientDataArray().get(i).getToken();
+            }
+        }
+
+        return "invalid token";
+    }
+
     public String generateLogInToken(String name,String pw){
         String token = "";
         int nameHash = name.hashCode(),pwHash = pw.hashCode();
-        token = Integer.toString(nameHash) + Integer.toString(pwHash) ;
-        return "str";
+        Calendar c = Calendar.getInstance();
+        token = Integer.toString(nameHash) + Integer.toString(pwHash) + c.get(Calendar.YEAR)
+                + c.get(Calendar.MONTH) + c.get(Calendar.DAY_OF_MONTH) + c.get(Calendar.HOUR_OF_DAY)
+                + c.get(Calendar.MINUTE) + c.get(Calendar.SECOND) + c.get(Calendar.MILLISECOND);
+        return token;
     }
 
     public static void main(String[] args) throws SQLException, RemoteException {

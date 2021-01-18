@@ -34,11 +34,11 @@ public class RestapiApplication {
                     .addFilterAfter(new AuthorizationFilter(),
                             UsernamePasswordAuthenticationFilter.class)
                     .authorizeRequests()
-                    .antMatchers(HttpMethod.POST, "/user/login").permitAll();      //l35 e 36 deixa passar o pedido /user/login mesmo nao tendo o token
-                    /*.anyRequest().authenticated().and()
+                    .antMatchers(HttpMethod.POST, "/user/login").permitAll()     //l35 e 36 deixa passar o pedido /user/login mesmo nao tendo o token
+                    .anyRequest().authenticated().and()
                     .sessionManagement().sessionCreationPolicy(SessionCreationPolicy.STATELESS)
                     .and().exceptionHandling().authenticationEntryPoint(
-                            new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));*/
+                            new HttpStatusEntryPoint(HttpStatus.UNAUTHORIZED));
         }
     }
 }
