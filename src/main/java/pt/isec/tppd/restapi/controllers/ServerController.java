@@ -1,11 +1,9 @@
 package pt.isec.tppd.restapi.controllers ;
 
 
-import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 import pt.isec.tppd.restapi.communicationLogic.Server;
+import pt.isec.tppd.restapi.models.User;
 
 import java.rmi.RemoteException;
 import java.sql.SQLException;
@@ -26,6 +24,17 @@ public class ServerController
     public String serverHi()
     {
         return server.getApiTest();
+    }
+
+    @PostMapping("/login") //localhost:8080/user/login
+    public User login(@RequestBody User user)
+    {
+        
+        user.setToken(user.getUsername() + "_123");
+        //fazer um token correto faz parte do desafio do trabalho pratico
+        user.setPassword("***");
+        return user;
+
     }
 
 }

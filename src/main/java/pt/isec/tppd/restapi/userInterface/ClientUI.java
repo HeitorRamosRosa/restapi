@@ -2,6 +2,7 @@ package pt.isec.tppd.restapi.userInterface;
 
 import pt.isec.tppd.restapi.businessLogic.clientUIStates;
 import pt.isec.tppd.restapi.communicationLogic.Client;
+import pt.isec.tppd.restapi.communicationLogic.Server;
 
 import java.util.Scanner;
 
@@ -41,16 +42,16 @@ public class ClientUI {
                         do{
                             do {
                                 try{
-                                System.out.println("You can either login or register.");
-                                System.out.println("1 - Login");
-                                System.out.println("2 - Register");
-                                System.out.print("Option: ");
-                                op = sc.nextLine();
+                                    System.out.println("You can either login or register.");
+                                    System.out.println("1 - Login");
+                                    System.out.println("2 - Register");
+                                    System.out.print("Option: ");
+                                    op = sc.nextLine();
 
-                                if (!op.isEmpty()) {
+                                    if (!op.isEmpty()) {
 
-                                    op2 = Integer.parseInt(op);
-                                    //wtf is this, use try catch
+                                        op2 = Integer.parseInt(op);
+                                        //wtf is this, use try catch
 
                                         System.out.print("Username: ");
                                         usr = sc.nextLine();
@@ -112,10 +113,10 @@ public class ClientUI {
                                                 break;
                                         }
 
-                                } else {
-                                    op2 = -1;
-                                }
-                            }catch (NumberFormatException e){
+                                    } else {
+                                        op2 = -1;
+                                    }
+                                }catch (NumberFormatException e){
                                     System.out.println("Please insert numbers 1 or 2.");
                                 }
                             }while(op2 < 1 && op2 > 2);
@@ -135,7 +136,7 @@ public class ClientUI {
                             option = sc.nextLine();
 
                             if(!option.isEmpty()){
-                                 com = option.split(" ");
+                                com = option.split(" ");
                                 exit = com[0];
                             }
                             switch (com[0]){

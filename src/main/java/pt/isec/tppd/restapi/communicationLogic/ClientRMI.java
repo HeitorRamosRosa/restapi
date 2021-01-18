@@ -1,6 +1,5 @@
 package pt.isec.tppd.restapi.communicationLogic;
 
-
 import pt.isec.tppd.restapi.businessLogic.ClientData;
 import pt.isec.tppd.restapi.businessLogic.RemoteClientInterface;
 import pt.isec.tppd.restapi.businessLogic.RemoteServerInterface;
@@ -10,9 +9,11 @@ import java.rmi.NotBoundException;
 import java.rmi.RemoteException;
 import java.rmi.registry.LocateRegistry;
 import java.rmi.registry.Registry;
+import java.rmi.server.RemoteServer;
 import java.rmi.server.UnicastRemoteObject;
 import java.util.ArrayList;
 import java.util.InputMismatchException;
+import java.util.Locale;
 import java.util.Scanner;
 
 public class ClientRMI extends UnicastRemoteObject implements RemoteClientInterface
@@ -35,6 +36,7 @@ public class ClientRMI extends UnicastRemoteObject implements RemoteClientInterf
 
                 int RegistryPort = Integer.parseInt(port) + Registry.REGISTRY_PORT;
                 Registry registry = LocateRegistry.getRegistry(RegistryPort);
+
                 RemoteServerInterface RS = (RemoteServerInterface) registry.lookup("Server"+port);
 
                 RMI_ServerData temp = new RMI_ServerData(port,RS);
@@ -59,7 +61,7 @@ public class ClientRMI extends UnicastRemoteObject implements RemoteClientInterf
             return;
         }
         do
-            {
+        {
             ShowServersOnline();
             System.out.println("Command: ");
             command = sc.next();
@@ -70,7 +72,13 @@ public class ClientRMI extends UnicastRemoteObject implements RemoteClientInterf
                     registerCommand();
                     break;
                 case "message":
-                     sendMessage();
+                    sendMessage();
+                    break;
+                case "observe":
+                    observe();
+                    break;
+                case "unobserve":
+                    unObserve();
                     break;
                 case "exit":
                     exit = true;
@@ -80,18 +88,16 @@ public class ClientRMI extends UnicastRemoteObject implements RemoteClientInterf
 
     }
 
-    private static void sendMessage() throws IOException {
+    private static void observe() throws IOException {
         int portChosen = -1;
-        String message,portString;
         Scanner sc = new Scanner(System.in);
-        ClientData ClientData = new ClientData();
+
         if(RemoteServerData.size()>1)
         {
             try {
                 ShowServersOnline();
-                System.out.println("Escolha um server: ");
-                portString = sc.nextLine();
-                portChosen = Integer.parseInt(portString);
+                System.out.println("Escolha um server para observar: ");
+                portChosen = sc.nextInt();
             }catch(InputMismatchException e)
             {
                 System.out.println("O port tem de ser um inteiro.");
@@ -104,6 +110,81 @@ public class ClientRMI extends UnicastRemoteObject implements RemoteClientInterf
         if(!isPortOnServerList(portChosen))
         {
             System.out.println("Port ["+portChosen+"] was not found.\n");
+            return;
+        }
+
+        RemoteServerInterface RSI = null;
+
+        for(RMI_ServerData server : RemoteServerData)
+        {
+            if(portChosen == Integer.parseInt(server.port))
+                RSI = server.RemoteServer;
+        }
+
+        RSI.registaObserver(new ClientRMI());
+    }
+
+    private static void unObserve() throws IOException {
+        int portChosen = -1;
+        Scanner sc = new Scanner(System.in);
+
+        if(RemoteServerData.size()>1)
+        {
+            try {
+                ShowServersOnline();
+                System.out.println("Escolha um server para observar: ");
+                portChosen = sc.nextInt();
+            }catch(InputMismatchException e)
+            {
+                System.out.println("O port tem de ser um inteiro.");
+                return;
+            }
+        }
+        else
+            portChosen = Integer.parseInt(RemoteServerData.get(0).port);
+
+        if(!isPortOnServerList(portChosen))
+        {
+            System.out.println("Port ["+portChosen+"] was not found.\n");
+            return;
+        }
+
+        RemoteServerInterface RSI = null;
+
+        for(RMI_ServerData server : RemoteServerData)
+        {
+            if(portChosen == Integer.parseInt(server.port))
+                RSI = server.RemoteServer;
+        }
+
+        RSI.unregisterObserver();
+    }
+
+    private static void sendMessage() throws IOException
+    {
+        int portChosen = -1;
+        String message, stringPort;
+        Scanner sc = new Scanner(System.in);
+        ClientData ClientData = new ClientData();
+        if(RemoteServerData.size()>1)
+        {
+            try {
+                ShowServersOnline();
+                System.out.println("Escolha um server: ");
+                stringPort = sc.nextLine();
+                portChosen = Integer.parseInt(stringPort);
+            }catch(InputMismatchException e)
+            {
+                System.out.println("O port tem de ser um inteiro.");
+                return;
+            }
+        }
+        else
+            portChosen = Integer.parseInt(RemoteServerData.get(0).port);
+
+        if(!isPortOnServerList(portChosen))
+        {
+            System.out.println("Server wtih port ["+portChosen+"] was not found.\n");
             return;
         }
 
@@ -153,7 +234,7 @@ public class ClientRMI extends UnicastRemoteObject implements RemoteClientInterf
         }
     }
 
-     private static boolean isPortOnServerList(int port){
+    private static boolean isPortOnServerList(int port){
         for(RMI_ServerData server : RemoteServerData){
             if(port == Integer.parseInt(server.port))
                 return true;

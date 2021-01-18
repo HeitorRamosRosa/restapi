@@ -10,7 +10,7 @@ import pt.isec.tppd.restapi.models.User;
 @RequestMapping("user")
 public class UserController
 {
-    @PostMapping("login") //localhost:8080/user/login
+    @PostMapping("login2") //localhost:8080/user/login
     public User login(@RequestBody User user)
     {
         user.setToken(user.getUsername() + "_123");
