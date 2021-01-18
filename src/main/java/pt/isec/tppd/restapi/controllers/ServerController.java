@@ -26,10 +26,14 @@ public class ServerController
         return server.getApiTest();
     }
 
+    @GetMapping("/lastMessages")
+    public String getLastMessages(){
+        return server.getLastMessages();
+    }
+
     @PostMapping("/login") //localhost:8080/user/login
     public User login(@RequestBody User user)
     {
-        
         user.setToken(user.getUsername() + "_123");
         //fazer um token correto faz parte do desafio do trabalho pratico
         user.setPassword("***");
